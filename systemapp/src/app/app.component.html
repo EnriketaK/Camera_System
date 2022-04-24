@@ -1,0 +1,201 @@
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" style="color:white;">Camera System</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+  <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarColor02">
+    <ul class="navbar-nav mr-auto">
+       <li class="nav-item active">
+          <a class="nav-link" (click)="onOpenModal(cameraNull, 'add')">Add Camera <span class="sr-only">(current)</span></a>
+       </li>
+       <li class="nav-item active">
+         <a class="nav-link" data-toggle="modal" data-target=".bd-example-modal-lg">Resolution Chart</a>
+      </li>
+      <li class="nav-item active">
+         <div class="dropdown">
+            <a class="nav-link" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Sort
+            </a>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <a class="dropdown-item" (click)="sortName()">Name</a>
+              <a class="dropdown-item" (click)="sortModel()">Model</a>
+              <a class="dropdown-item" (click)="sortResolution()">Resolution</a>
+            </div>
+          </div>
+      </li>
+    </ul>
+    <form class="form-inline my-2 my-lg-0">
+        <input name="key" (keydown.enter)="searchCameras(key.value)" type="search" #key="ngModel" ngModel
+        id="searchName" class="form-control mr-sm-2" placeholder="Search Cameras..." required>
+    </form>
+ </div>
+</nav>
+<div id="main-container" class="container">
+    <div class="row">
+        <div *ngFor="let camera of cameras | paginate: { itemsPerPage: 12, 
+                     currentPage: page, 
+                     totalItems: camerasAllLength
+                  }" class="col-md-6 col-xl-3">
+            <div class="card m-b-30">
+                <div class="card-body row">
+                    <div class="col-6 card-title align-self-center mb-0">
+                        <h5>{{camera?.name}}</h5>
+                        <p class="m-0">{{camera?.model}}</p>
+                    </div>
+                </div>
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item">IP Address: {{camera?.ip}}</li>
+                    <li class="list-group-item">Resolution: {{camera?.resolution}}</li>
+                    <li class="list-group-item">Width: {{camera?.widthPx}}px</li>
+                    <li class="list-group-item">Height: {{camera?.heightPx}}px</li>
+                </ul>
+                <div class="card-body">
+                    <div class="float-right btn-group btn-group-sm">
+                        <a (click)="onOpenModal(camera, 'edit')" href="#" class="btn btn-primary tooltips" data-placement="top" data-toggle="tooltip" data-original-title="Edit"><i class="fa fa-pencil"></i> </a>
+                        <a (click)="onOpenModal(camera, 'delete')" href="#" class="btn btn-secondary tooltips" data-placement="top" data-toggle="tooltip" data-original-title="Delete"><i class="fa fa-times"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <pagination-controls class="text-center my-pagination" (pageChange)="page = $event"></pagination-controls>
+
+
+ <div class="modal fade" id="addCameraModal" tabindex="-1" role="dialog" aria-labelledby="addCameraModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+       <div class="modal-header">
+          <h5 class="modal-title" id="addCameraModalLabel">Add Camera</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+          </button>
+       </div>
+       <div class="modal-body">
+          <form #addForm="ngForm" (ngSubmit)="onAddCamera(addForm)"> 
+          <div class="form-group">
+             <label for="name">Name</label>
+             <input type="text" ngModel name="name" class="form-control" id="name" placeholder="Name" required>
+          </div>
+          <div class="form-group">
+             <label for="model">Model</label> 
+             <input type="text" ngModel name="model" class="form-control" id="model" placeholder="Model" required>
+          </div>
+         <div class="form-group">
+            <label for="ipAdress">IP Adress</label> 
+            <input type="text" ngModel name="ip" class="form-control" id="ip" placeholder="IP Address" pattern="^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$" required>
+         </div>
+         <div class="form-group">
+             <label for="resolutionTitle">Resolution Title</label>
+             <input type="text" ngModel name="resolution" class="form-control" id="resolutionTitle" placeholder="Resolution" required>
+          </div>
+          <div class="form-group">
+            <label for="resolutionWidth">Resolution Width:</label>
+            <input type="number" ngModel name="widthPx" class="form-control" id="resolutionWidth" placeholder="Width" required min="1">
+         </div>
+         <div class="form-group">
+          <label for="resolutionHeight">Resolution Height</label>
+          <input type="number" ngModel name="heightPx" class="form-control" id="resolutionHeight" placeholder="Height" required min="1">
+         </div> 
+          <div class="modal-footer">
+             <button type="button" id="add-camera-form" class="btn btn-secondary" data-dismiss="modal">Close</button>
+             <button [disabled]="addForm.invalid" type="submit" class="btn btn-primary" >Save changes</button>
+          </div>
+          </form>
+       </div>
+    </div>
+  </div>
+  </div>
+
+<div class="modal fade" id="updateCameraModal" tabindex="-1" role="dialog" aria-labelledby="CameraEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+     <div class="modal-content">
+        <div class="modal-header">
+           <h5 class="modal-title" id="updateCameraModalLabel">Edit Camera {{editCamera?.name}}</h5>
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+           <span aria-hidden="true">&times;</span>
+           </button>
+        </div>
+        <div class="modal-body">
+           <form #editForm="ngForm">
+              <div class="form-group">
+                 <input type="hidden" ngModel="{{editCamera?.id}}" name="id" class="form-control" id="id" placeholder="id">
+                 <label for="name">Name</label>
+                 <input type="text" ngModel="{{editCamera?.name}}" name="name" class="form-control" id="name" placeholder="Name" required>
+              </div>
+              <div class="form-group">
+                 <label for="phone">Model</label>
+                 <input type="text" ngModel="{{editCamera?.model}}" name="model" class="form-control" id="model" placeholder="Model" required>
+              </div>
+              <div class="form-group">
+               <label for="phone">IP Adress</label>
+               <input type="text" ngModel="{{editCamera?.ip}}" name="ip" class="form-control" id="ip" 
+                           pattern="^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$" placeholder="IP Address" required>
+            </div>
+            <div class="form-group">
+               <label for="phone">Resolution Title</label>
+               <input type="text" ngModel="{{editCamera?.resolution}}" name="resolution" class="form-control" id="resolution" placeholder="resolution" required>
+            </div>
+            <div class="form-group">
+               <label for="phone">Resolution Width</label>
+               <input type="number" min="1" ngModel="{{editCamera?.widthPx}}" name="widthPx" class="form-control" id="widthPx" placeholder="Width" required>
+            </div>
+            <div class="form-group">
+               <label for="phone">Resolution Height</label>
+               <input type="number" min="1" ngModel="{{editCamera?.heightPx}}" name="heightPx" class="form-control" id="widthPx" placeholder="Height" required>
+            </div>
+              <div class="modal-footer">
+                 <button type="button" id="" data-dismiss="modal" class="btn btn-secondary">Close</button>
+                 <button (click)="onUpdateCamera(editForm.value)" data-dismiss="modal" class="btn btn-primary" >Save changes</button>
+              </div>
+           </form>
+        </div>
+     </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteCameraModal" tabindex="-1" role="dialog" aria-labelledby="deleteModelLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+     <div class="modal-content">
+        <div class="modal-header">
+           <h5 class="modal-title" id="deleteModelLabel">Delete Camera</h5>
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+           <span aria-hidden="true">&times;</span>
+           </button>
+        </div>
+        <div class="modal-body">
+           <p>Are you sure you want to delete Camera {{deleteCamera?.name}}?</p>
+           <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+              <button (click)="onDeleteCamera(deleteCamera!.id)" class="btn btn-danger" data-dismiss="modal">Yes</button>
+           </div>
+        </div>
+     </div>
+  </div>
+</div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-lg">
+     <div class="modal-content">
+      <div class="modal-header">
+         <h5 class="modal-title">Cameras Resolution</h5>
+         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+           <span aria-hidden="true">&times;</span>
+         </button>
+       </div>
+      <div id="divChart" >
+         <canvas id="myChart">
+         </canvas>
+      </div>
+     </div>
+   </div>
+ </div>
+
+
+<!-- <div *ngIf="cameras?.length == 0" class="col-lg-12 col-md-12 col-xl-12">
+<div class="alert alert-info" role="alert">
+  <h4 class="alert-heading">NO Cameras!</h4>
+  <p>No Cameras were found.</p>
+</div>
+</div> -->

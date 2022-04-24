@@ -1,0 +1,17 @@
+#divChart{
+    display: block;
+    height: 400px;
+    height: 400px;
+}
+
+.my-pagination /deep/ .ngx-pagination .current {
+    background: #007bff;
+  }
+
+a#dropdownMenuButton.nav-link {
+    color: white;
+}
+
+a#dropdownMenuButton:hover {
+    color: gray;
+}
